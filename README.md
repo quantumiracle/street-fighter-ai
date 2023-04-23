@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 # Run script to locate gym-retro game folder
 cd ..
-python .\utils\print_game_lib_folder.py
+python ./utils/print_game_lib_folder.py
 ```
 
 After the console outputs the folder path, copy it to the file explorer and navigate to the corresponding path. This folder contains the game data files for "Street Fighter II: Special Champion Edition" within gym-retro, including the game ROM file and data configuration files. Copy the `Champion.Level12.RyuVsBison.state`, `data.json`, `metadata.json`, and `scenario.json` files from the `data/` folder of this project into the game data folder, replacing the original files (administrator privileges may be required). The `.state` file is a save state for the game's highest difficulty level, while the three `.json` files are gym-retro configuration files storing game information memory addresses (this project only uses [agent_hp] and [enemy_hp] for reading character health values in real-time).
