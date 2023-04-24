@@ -1,7 +1,7 @@
 {
   "done": {
     "variables": {
-      "reset_countdown": {
+      "continuetimer": {
         "op": "equal",
         "reference": 10
       }

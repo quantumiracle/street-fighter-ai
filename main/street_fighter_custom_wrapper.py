@@ -80,8 +80,13 @@ class StreetFighterCustomWrapper(gym.Wrapper):
                 self.env.render()
                 time.sleep(0.01)
 
-        curr_player_health = info['agent_hp']
-        curr_oppont_health = info['enemy_hp']
+        # agent_key = 'agent_hp'
+        # enemy_key = 'enemy_hp'
+        agent_key = 'health' # https://github.com/linyiLYi/street-fighter-ai/issues/23
+        enemy_key = 'enemy_health'
+
+        curr_player_health = info[agent_key]
+        curr_oppont_health = info[enemy_key]
         
         self.total_timesteps += self.num_step_frames
         

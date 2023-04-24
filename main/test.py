@@ -60,6 +60,10 @@ episode_reward_sum = 0
 num_victory = 0
 
 print("\nFighting Begins!\n")
+# agent_key = 'agent_hp'
+# enemy_key = 'enemy_hp'
+agent_key = 'health' # https://github.com/linyiLYi/street-fighter-ai/issues/23
+enemy_key = 'enemy_health'
 
 for _ in range(num_episodes):
     done = False
@@ -80,12 +84,11 @@ for _ in range(num_episodes):
 
         if reward != 0:
             total_reward += reward
-            print("Reward: {:.3f}, playerHP: {}, enemyHP:{}".format(reward, info['agent_hp'], info['enemy_hp']))
-        
-        if info['enemy_hp'] < 0 or info['agent_hp'] < 0:
+            print("Reward: {:.3f}, playerHP: {}, enemyHP:{}".format(reward, info[agent_key], info[enemy_key]))
+        if info[enemy_key] < 0 or info[agent_key] < 0:
             done = True
 
-    if info['enemy_hp'] < 0:
+    if info[enemy_key] < 0:
         print("Victory!")
         num_victory += 1
 
@@ -93,7 +96,7 @@ for _ in range(num_episodes):
     episode_reward_sum += total_reward
 
     if not RESET_ROUND:
-        while info['enemy_hp'] < 0 or info['agent_hp'] < 0:
+        while info[enemy_key] < 0 or info[agent_key] < 0:
         # Inter scene transition. Do nothing.
             obs, reward, done, info = env.step([0] * 12)
             env.render()
