@@ -4,7 +4,7 @@ from interactive import RetroInteractive
 
 import retro
 from stable_baselines3 import PPO
-from street_fighter_custom_wrapper import StreetFighterCustomWrapper
+from againstAI_street_fighter_custom_wrapper import StreetFighterCustomWrapper
 
 RESET_ROUND = False  # Whether to reset the round when fight is over. 
 
