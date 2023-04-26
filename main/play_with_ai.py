@@ -36,7 +36,8 @@ def make_env(game, state):
 
 game = "StreetFighterIISpecialChampionEdition-Genesis"
 #state="Champion.Level12.RyuVsBison"
-state = "Champion.Level12.RyuVsBison.2Player"
+# state = "Champion.Level12.RyuVsBison.2Player"
+state = "Champion.Level13.RyuVsBison.2Player"
 env = make_env(game, state)()
 model = PPO.load(os.path.join(MODEL_DIR, MODEL_NAME), env=env)
 ia = RetroInteractive(env, model)
