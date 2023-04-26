@@ -15,13 +15,13 @@ images/
 /main/recordings/
 
 # Main scripts
-/main/*.py
+!/main/*.py
 !/main/test.py
 !/main/train.py
 !/main/street_fighter_custom_wrapper.py
 
 # Game Data
-/data/*
+!/data/*
 !/data/Champion.Level12.RyuVsBison.state
 !/data/data.json
 !/data/metadata.json
