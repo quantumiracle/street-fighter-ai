@@ -1,6 +1,7 @@
 *.zip
 **/__pycache__/
 *.pyc
+*.bk*
 
 archives/
 images/
