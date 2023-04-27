@@ -3,11 +3,13 @@ Interact with Gym environments using the keyboard
 An adapter object is defined for each environment to map keyboard commands to actions and extract observations as pixels.
 """
 
+import gzip
 import sys
 import ctypes
 import argparse
 import abc
 import time
+
 
 import numpy as np
 import retro
@@ -113,12 +115,17 @@ class Interactive(abc.ABC):
                     if getattr(keycodes, name) == keycode:
                         keys.append(name)
 
+            if 'P' in keys:
+                print("try to save state")
+                # self.save_state_to_file("Champion.Level12.RyuVsBison.2Player.state")
+                self.save_state_to_file("Champion.Level1.RyuVsRyu.2Player.state")
+
             act = self.keys_to_act(keys)
 
             if not self._sync or act is not None:
                 obs, rew, done, _info = self._env.step(act)
                 self._image = self.get_image(obs, self._env)
-                self._episode_returns += rew
+                self._episode_returns += rew[0]
                 self._steps += 1
                 self._episode_steps += 1
                 np.set_printoptions(precision=2)
@@ -196,14 +203,23 @@ class Interactive(abc.ABC):
             self._draw()
             self._win.flip()
 
+    def save_state_to_file(self, name="test.state"):
+        content = self._env.em.get_state()
+        with gzip.open(name, 'wb') as f:
+            f.write(content)
 
 class RetroInteractive(Interactive):
     """
     Interactive setup for retro games
     """
-    def __init__(self, game, state, scenario, record):
-        env = retro.make(game=game, state=state, scenario=scenario, record=record, use_restricted_actions=retro.Actions.ALL)
-        self._buttons = env.buttons
+    def __init__(self, game, state, scenario, record):       
+        env = retro.make(game=game, state=state, scenario=scenario, record=record,
+                        use_restricted_actions=retro.Actions.ALL,
+                        players=2)                         
+        
+        self._buttons = ['B1', 'A1', 'MODE1', 'START1', 'UP1', 'DOWN1', 'LEFT1', 'RIGHT1', 'C1', 'Y1', 'X1', 'Z1']
+        self._buttons += ['B2', 'A2', 'MODE2', 'START2', 'UP2', 'DOWN2', 'LEFT2', 'RIGHT2', 'C2', 'Y2', 'X2', 'Z2']
+        print("buttons:" , env.buttons)
         super().__init__(env=env, sync=False, tps=60, aspect_ratio=4/3)
 
     def get_image(self, _obs, env):
@@ -214,27 +230,49 @@ class RetroInteractive(Interactive):
             None: False,
 
             'BUTTON': 'Z' in keys,
-            'A': 'Z' in keys,
-            'B': 'X' in keys,
+            'A1': 'Z' in keys,
+            'B1': 'X' in keys,
 
-            'C': 'C' in keys,
-            'X': 'A' in keys,
-            'Y': 'S' in keys,
-            'Z': 'D' in keys,
+            'C1': 'C' in keys,
+            'X1': 'A' in keys,
+            'Y1': 'S' in keys,
+            'Z1': 'D' in keys,
 
-            'L': 'Q' in keys,
-            'R': 'W' in keys,
+            'L1': 'Q' in keys,
+            'R1': 'W' in keys,
 
-            'UP': 'UP' in keys,
-            'DOWN': 'DOWN' in keys,
-            'LEFT': 'LEFT' in keys,
-            'RIGHT': 'RIGHT' in keys,
+            'UP1': 'UP' in keys,
+            'DOWN1': 'DOWN' in keys,
+            'LEFT1': 'LEFT' in keys,
+            'RIGHT1': 'RIGHT' in keys,
 
-            'MODE': 'TAB' in keys,
-            'SELECT': 'TAB' in keys,
-            'RESET': 'ENTER' in keys,
-            'START': 'ENTER' in keys,
-        }
+            'MODE1': 'Y' in keys,
+            'SELECT1': 'H' in keys,
+            'RESET1': 'B' in keys,
+            'START1': 'G' in keys,
+            
+            'BUTTON2': 'Z' in keys,
+            'A2': 'J' in keys,
+            'B2': 'K' in keys,
+
+            'C2': 'L' in keys,
+            'X2': 'U' in keys,
+            'Y2': 'I' in keys,
+            'Z2': 'O' in keys,
+
+            'L2': 'Q' in keys,
+            'R2': 'E' in keys,
+
+            'UP2': 'W' in keys,
+            'DOWN2': 'S' in keys,
+            'LEFT2': 'A' in keys,
+            'RIGHT2': 'D' in keys,
+
+            'MODE2': 'M' in keys,
+            'SELECT2': 'TAB' in keys,
+            'RESET2': 'ENTER' in keys,
+            'START2': 'N' in keys,
+        }        
         return [inputs[b] for b in self._buttons]
 
 
@@ -243,7 +281,10 @@ def main():
     # parser.add_argument('--game', default='Airstriker-Genesis')
     # parser.add_argument('--state', default=retro.State.DEFAULT)
     parser.add_argument('--game', default='StreetFighterIISpecialChampionEdition-Genesis')
-    parser.add_argument('--state', default="Champion.Level12.RyuVsBison.2Player")
+    # parser.add_argument('--state', default="Champion.Level13.RyuVsBison.2Player")
+    # parser.add_argument('--state', default="Champion.Level1.RyuVsRyu.2Player-2")
+    parser.add_argument('--state', default="Champion.Start.RyuVsRyu.2Player")
+    # parser.add_argument('--state', default=retro.State.DEFAULT)
 
     parser.add_argument('--scenario', default=None)
     parser.add_argument('--record', default=None, nargs='?', const=True)
