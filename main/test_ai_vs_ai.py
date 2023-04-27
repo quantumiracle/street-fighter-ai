@@ -1,18 +1,7 @@
-# Copyright 2023 LIN Yi. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
 import os
 import time 
 import argparse
+import numpy as np
 
 import retro
 from stable_baselines3 import PPO
@@ -40,7 +29,8 @@ def make_env(game, state, reset_type):
             game=game, 
             state=state, 
             use_restricted_actions=retro.Actions.FILTERED,
-            obs_type=retro.Observations.IMAGE
+            obs_type=retro.Observations.IMAGE,
+            players=2
         )
         env = StreetFighterCustomWrapper(env, reset_type=reset_type, rendering=RENDERING)
         return env
@@ -66,11 +56,12 @@ else:
 
 game = "StreetFighterIISpecialChampionEdition-Genesis"
 #env = make_env(game, state="Champion.Level12.RyuVsBison")()
-env = make_env(game, state="Champion.Level1.RyuVsGuile", reset_type=reset_type)()
+env = make_env(game, state="Champion.Level1.RyuVsRyu.2Player.state", reset_type=reset_type)()
 # model = PPO("CnnPolicy", env)
 
 if not RANDOM_ACTION:
-    model = PPO.load(os.path.join(MODEL_DIR, MODEL_NAME), env=env)
+    model1 = PPO.load(os.path.join(MODEL_DIR, MODEL_NAME), env=env)
+    model2 = PPO.load(os.path.join(MODEL_DIR, MODEL_NAME), env=env)
 
 obs = env.reset()
 done = False
@@ -78,6 +69,11 @@ done = False
 num_episodes = NUM_EPISODES
 episode_reward_sum = 0
 num_victory = 0
+
+# agent_key = 'agent_hp'
+# enemy_key = 'enemy_hp'
+agent_key = 'health' # https://github.com/linyiLYi/street-fighter-ai/issues/23
+enemy_key = 'enemy_health'
 
 print("\nFighting Begins!\n")
 
@@ -92,18 +88,22 @@ for _ in range(num_episodes):
         timestamp = time.time()
 
         if RANDOM_ACTION:
-            action = env.action_space.sample()
+            action1 = env.action_space.sample()
+            action2 = env.action_space.sample()
         else:
-            action, _states = model.predict(obs)
-        action[3] = 0 # Filter out the "START/PAUSE" button
+            action1, _states = model1.predict(obs)
+            action2, _states = model2.predict(obs)
+        action1[3] = 0 # Filter out the "START/PAUSE" button
+        action2[3] = 0 # Filter out the "START/PAUSE" button
+        action = np.concatenate((action1, action2))
         obs, reward, done, info = env.step(action)
 
         if reward != 0:
             total_reward += reward
-            print("Reward: {:.3f}, playerHP: {}, enemyHP:{}".format(reward, info['agent_hp'], info['enemy_hp']))
+            print("Reward: {:.3f}, playerHP: {}, enemyHP:{}".format(reward, info[agent_key], info[enemy_key]))
         
 
-    if info['enemy_hp'] < 0:
+    if info[enemy_key] < 0:
         print("Victory!")
         num_victory += 1
 

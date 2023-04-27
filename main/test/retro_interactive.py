@@ -3,7 +3,6 @@ Interact with Gym environments using the keyboard
 An adapter object is defined for each environment to map keyboard commands to actions and extract observations as pixels.
 """
 
-import gzip
 import sys
 import ctypes
 import argparse
@@ -21,10 +20,9 @@ class Interactive(abc.ABC):
     """
     Base class for making gym environments interactive for human use
     """
-    def __init__(self, env, model, sync=True, tps=60, aspect_ratio=None):
-        self.model = model
-        self.obs = env.reset()
-        self._image = self.get_image(self.obs, env)
+    def __init__(self, env, sync=True, tps=60, aspect_ratio=None):
+        obs = env.reset()
+        self._image = self.get_image(obs, env)
         assert len(self._image.shape) == 3 and self._image.shape[2] == 3, 'must be an RGB image'
         image_height, image_width = self._image.shape[:2]
 
@@ -79,9 +77,6 @@ class Interactive(abc.ABC):
         self._sim_time = 0
         self._max_sim_frames_per_update = 4
 
-        self._num_AI_step_frames = 6
-
-
     def _update(self, dt):
         # cap the number of frames rendered so we don't just spend forever trying to catch up on frames
         # if rendering is slow
@@ -118,22 +113,11 @@ class Interactive(abc.ABC):
                     if getattr(keycodes, name) == keycode:
                         keys.append(name)
 
-            if 'B' in keys:
-                print("try to save state")
-                # self.save_state_to_file("Champion.Level12.RyuVsBison.2Player.state")
-                self.save_state_to_file("Champion.Level1.RyuVsRyu.2Player.state")
-                
-            player_act = self.keys_to_act(keys)
+            act = self.keys_to_act(keys)
 
-            if not self._sync or player_act is not None:
-                if (self._steps % self._num_AI_step_frames == 0):
-                    self.ai_action, _states = self.model.predict(self.obs)
-                    self.ai_action[3] = 0
-                action = np.concatenate((self.ai_action, player_act))
-                #action = np.concatenate((player_act, player_act))
-                #print("action1: " + str(action))
-                self.obs, rew, done, _info = self._env.step(action)
-                self._image = self.get_image(self.obs, self._env)
+            if not self._sync or act is not None:
+                obs, rew, done, _info = self._env.step(act)
+                self._image = self.get_image(obs, self._env)
                 self._episode_returns += rew
                 self._steps += 1
                 self._episode_steps += 1
@@ -153,7 +137,7 @@ class Interactive(abc.ABC):
                     print(mess)
 
                 if done:
-                    self.obs = self._env.reset()
+                    self._env.reset()
                     self._episode_steps = 0
                     self._episode_returns = 0
                     self._prev_episode_returns = 0
@@ -212,18 +196,15 @@ class Interactive(abc.ABC):
             self._draw()
             self._win.flip()
 
-    def save_state_to_file(self, name="test.state"):
-        content = self._env.em.get_state()
-        with gzip.open(name, 'wb') as f:
-            f.write(content)
 
 class RetroInteractive(Interactive):
     """
     Interactive setup for retro games
     """
-    def __init__(self, env, model):
+    def __init__(self, game, state, scenario, record):
+        env = retro.make(game=game, state=state, scenario=scenario, record=record, use_restricted_actions=retro.Actions.ALL)
         self._buttons = env.buttons
-        super().__init__(env=env, model=model, sync=False, tps=60, aspect_ratio=4/3)
+        super().__init__(env=env, sync=False, tps=60, aspect_ratio=4/3)
 
     def get_image(self, _obs, env):
         return env.render(mode='rgb_array')
@@ -233,25 +214,44 @@ class RetroInteractive(Interactive):
             None: False,
 
             'BUTTON': 'Z' in keys,
-            'A': 'J' in keys,
-            'B': 'K' in keys,
+            'A': 'Z' in keys,
+            'B': 'X' in keys,
 
-            'C': 'L' in keys,
-            'X': 'U' in keys,
-            'Y': 'I' in keys,
-            'Z': 'O' in keys,
+            'C': 'C' in keys,
+            'X': 'A' in keys,
+            'Y': 'S' in keys,
+            'Z': 'D' in keys,
 
             'L': 'Q' in keys,
-            'R': 'E' in keys,
+            'R': 'W' in keys,
 
-            'UP': 'W' in keys,
-            'DOWN': 'S' in keys,
-            'LEFT': 'A' in keys,
-            'RIGHT': 'D' in keys,
+            'UP': 'UP' in keys,
+            'DOWN': 'DOWN' in keys,
+            'LEFT': 'LEFT' in keys,
+            'RIGHT': 'RIGHT' in keys,
 
-            'MODE': 'M' in keys,
+            'MODE': 'TAB' in keys,
             'SELECT': 'TAB' in keys,
             'RESET': 'ENTER' in keys,
-            'START': 'N' in keys,
+            'START': 'ENTER' in keys,
         }
         return [inputs[b] for b in self._buttons]
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    # parser.add_argument('--game', default='Airstriker-Genesis')
+    # parser.add_argument('--state', default=retro.State.DEFAULT)
+    parser.add_argument('--game', default='StreetFighterIISpecialChampionEdition-Genesis')
+    parser.add_argument('--state', default="Champion.Level12.RyuVsBison.2Player")
+
+    parser.add_argument('--scenario', default=None)
+    parser.add_argument('--record', default=None, nargs='?', const=True)
+    args = parser.parse_args()
+
+    ia = RetroInteractive(game=args.game, state=args.state, scenario=args.scenario, record=args.record)
+    ia.run()
+
+
+if __name__ == '__main__':
+    main()

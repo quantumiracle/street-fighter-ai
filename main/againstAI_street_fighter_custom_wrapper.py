@@ -84,7 +84,7 @@ class StreetFighterCustomWrapper(gym.Wrapper):
         #     if self.rendering:
         #         self.env.render()
         #         time.sleep(0.01)
-        
+
         # agent_key = 'agent_hp'
         # enemy_key = 'enemy_hp'
         agent_key = 'health' # https://github.com/linyiLYi/street-fighter-ai/issues/23

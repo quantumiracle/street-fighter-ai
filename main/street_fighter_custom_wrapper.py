@@ -19,7 +19,7 @@ import numpy as np
 
 # Custom environment wrapper
 class StreetFighterCustomWrapper(gym.Wrapper):
-    def __init__(self, env, reset_round=True, rendering=False):
+    def __init__(self, env, reset_type="round", rendering=False, step_extra_frame=True):
         super(StreetFighterCustomWrapper, self).__init__(env)
         self.env = env
 
@@ -39,8 +39,13 @@ class StreetFighterCustomWrapper(gym.Wrapper):
 
         self.observation_space = gym.spaces.Box(low=0, high=255, shape=(100, 128, 3), dtype=np.uint8)
         
-        self.reset_round = reset_round
+        self.step_extra_frame = step_extra_frame
+        self.reset_type = reset_type
         self.rendering = rendering
+
+        self.player_won = 0
+        self.oppont_won = 0
+        self.during_transation = False
     
     def _stack_observation(self):
         return np.stack([self.frame_stack[i * 3 + 2][:, :, i] for i in range(3)], axis=-1)
@@ -62,7 +67,6 @@ class StreetFighterCustomWrapper(gym.Wrapper):
 
     def step(self, action):
         custom_done = False
-
         obs, _reward, _done, info = self.env.step(action)
         self.frame_stack.append(obs[::2, ::2, :])
 
@@ -71,14 +75,14 @@ class StreetFighterCustomWrapper(gym.Wrapper):
             self.env.render()
             time.sleep(0.01)
 
-        for _ in range(self.num_step_frames - 1):
-            
-            # Keep the button pressed for (num_step_frames - 1) frames.
-            obs, _reward, _done, info = self.env.step(action)
-            self.frame_stack.append(obs[::2, ::2, :])
-            if self.rendering:
-                self.env.render()
-                time.sleep(0.01)
+        if self.step_extra_frame:
+            for _ in range(self.num_step_frames - 1):            
+                # Keep the button pressed for (num_step_frames - 1) frames.
+                obs, _reward, _done, info = self.env.step(action)
+                self.frame_stack.append(obs[::2, ::2, :])
+                if self.rendering:
+                    self.env.render()
+                    time.sleep(0.01)
 
         # agent_key = 'agent_hp'
         # enemy_key = 'enemy_hp'
@@ -90,32 +94,64 @@ class StreetFighterCustomWrapper(gym.Wrapper):
         
         self.total_timesteps += self.num_step_frames
         
-        # Game is over and player loses.
-        if curr_player_health < 0:
-            custom_reward = -math.pow(self.full_hp, (curr_oppont_health + 1) / (self.full_hp + 1))    # Use the remaining health points of opponent as penalty. 
-                                                   # If the opponent also has negative health points, it's a even game and the reward is +1.
-            custom_done = True
-
-        # Game is over and player wins.
-        elif curr_oppont_health < 0:
-            # custom_reward = curr_player_health * self.reward_coeff # Use the remaining health points of player as reward.
-                                                                   # Multiply by reward_coeff to make the reward larger than the penalty to avoid cowardice of agent.
-
-            # custom_reward = math.pow(self.full_hp, (5940 - self.total_timesteps) / 5940) * self.reward_coeff # Use the remaining time steps as reward.
-            custom_reward = math.pow(self.full_hp, (curr_player_health + 1) / (self.full_hp + 1)) * self.reward_coeff
-            custom_done = True
-
-        # While the fighting is still going on
+        if (self.during_transation and (curr_player_health < 0 or curr_oppont_health < 0)):
+            # During transation between episodes, do nothing
+            custom_done = False
+            custom_reward = 0
         else:
-            custom_reward = self.reward_coeff * (self.prev_oppont_health - curr_oppont_health) - (self.prev_player_health - curr_player_health)
-            self.prev_player_health = curr_player_health
-            self.prev_oppont_health = curr_oppont_health
-            custom_done = False
+            self.during_transation = False
+            if curr_player_health < 0 and curr_oppont_health < 0:
+                print ("Draw round")
+                custom_reward = 1
+                if (self.reset_type == "round"):
+                    custom_done = True
+                else:
+                    custom_done = False
+                    self.during_transation = True
+            elif curr_player_health < 0:
+                print("The round is over and player loses.")
+                custom_reward = -math.pow(self.full_hp, (curr_oppont_health + 1) / (self.full_hp + 1))    # Use the remaining health points of opponent as penalty. 
+                if (self.reset_type == "round"):
+                    custom_done = True
+                else:
+                    self.during_transation = True
+                    self.oppont_won += 1
+                    if (self.oppont_won >= 2):
+                        # Player loses the game
+                        print("Player loses the game")
+                        self.player_won = 0
+                        self.oppont_won = 0
+                        custom_done = True
 
-        # When reset_round flag is set to False (never reset), the session should always keep going.
-        if not self.reset_round:
-            custom_done = False
-             
+            elif curr_oppont_health < 0:
+                print("The round is over and player wins.")
+                # custom_reward = curr_player_health * self.reward_coeff # Use the remaining health points of player as reward.
+                                                                    # Multiply by reward_coeff to make the reward larger than the penalty to avoid cowardice of agent.
+
+                # custom_reward = math.pow(self.full_hp, (5940 - self.total_timesteps) / 5940) * self.reward_coeff # Use the remaining time steps as reward.
+                custom_reward = math.pow(self.full_hp, (curr_player_health + 1) / (self.full_hp + 1)) * self.reward_coeff
+
+                if (self.reset_type == "round"):
+                    custom_done = True
+                else:
+                    self.during_transation = True
+                    self.player_won += 1
+                    if (self.player_won >= 2):
+                        # Player wins the match
+                        print("Player wins the match")
+                        self.player_won = 0
+                        self.oppont_won = 0
+                        custom_done = self.reset_type == "match"
+
+            # While the fighting is still going on
+            else:
+                custom_reward = self.reward_coeff * (self.prev_oppont_health - curr_oppont_health) - (self.prev_player_health - curr_player_health)
+                self.prev_player_health = curr_player_health
+                self.prev_oppont_health = curr_oppont_health
+                custom_done = False
+
+        # if custom_reward != 0:
+        #     print("reward:{}".format(custom_reward))
+
         # Max reward is 6 * full_hp = 1054 (damage * 3 + winning_reward * 3) norm_coefficient = 0.001
         return self._stack_observation(), 0.001 * custom_reward, custom_done, info # reward normalization
-    
