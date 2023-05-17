@@ -115,12 +115,13 @@ class Interactive(abc.ABC):
                     if getattr(keycodes, name) == keycode:
                         keys.append(name)
 
-            if 'P' in keys:
+            if 'SPACE' in keys:
                 print("try to save state")
                 # self.save_state_to_file("Champion.Level12.RyuVsBison.2Player.state")
-                self.save_state_to_file("Champion.Level1.RyuVsRyu.2Player.state")
+                self.save_state_to_file("Champion.Level1.unknown.2Player.state")
 
             act = self.keys_to_act(keys)
+            
 
             if not self._sync or act is not None:
                 obs, rew, done, _info = self._env.step(act)
@@ -228,49 +229,46 @@ class RetroInteractive(Interactive):
     def keys_to_act(self, keys):
         inputs = {
             None: False,
-
             'BUTTON': 'Z' in keys,
-            'A1': 'Z' in keys,
-            'B1': 'X' in keys,
-
-            'C1': 'C' in keys,
-            'X1': 'A' in keys,
-            'Y1': 'S' in keys,
-            'Z1': 'D' in keys,
+            'A1': 'F' in keys, 
+            'B1': 'G' in keys, 
+            'C1': 'H' in keys, 
+            'X1': 'R' in keys, 
+            'Y1': 'T' in keys, 
+            'Z1': 'Y' in keys, 
 
             'L1': 'Q' in keys,
-            'R1': 'W' in keys,
+            'R1': 'E' in keys, 
 
-            'UP1': 'UP' in keys,
-            'DOWN1': 'DOWN' in keys,
-            'LEFT1': 'LEFT' in keys,
-            'RIGHT1': 'RIGHT' in keys,
+            'UP1': 'W' in keys,
+            'DOWN1': 'S' in keys,
+            'LEFT1': 'A' in keys,
+            'RIGHT1': 'D' in keys,
 
-            'MODE1': 'Y' in keys,
-            'SELECT1': 'H' in keys,
-            'RESET1': 'B' in keys,
-            'START1': 'G' in keys,
+            'MODE1': 'TAB' in keys, 
+            'SELECT1': 'CTRL' in keys, 
+            'RESET1': 'Q' in keys, 
+            'START1': 'E' in keys, 
             
             'BUTTON2': 'Z' in keys,
             'A2': 'J' in keys,
             'B2': 'K' in keys,
-
             'C2': 'L' in keys,
             'X2': 'U' in keys,
             'Y2': 'I' in keys,
             'Z2': 'O' in keys,
 
-            'L2': 'Q' in keys,
-            'R2': 'E' in keys,
+            'L2': 'N' in keys, 
+            'R2': 'M' in keys, 
 
-            'UP2': 'W' in keys,
-            'DOWN2': 'S' in keys,
-            'LEFT2': 'A' in keys,
-            'RIGHT2': 'D' in keys,
+            'UP2': 'UP' in keys,
+            'DOWN2': 'DOWN' in keys,
+            'LEFT2': 'LEFT' in keys,
+            'RIGHT2': 'RIGHT' in keys,
 
             'MODE2': 'M' in keys,
-            'SELECT2': 'TAB' in keys,
-            'RESET2': 'ENTER' in keys,
+            'SELECT2': 'ENTER' in keys, 
+            'RESET2': 'SHIFT' in keys, 
             'START2': 'N' in keys,
         }        
         return [inputs[b] for b in self._buttons]
@@ -283,7 +281,9 @@ def main():
     parser.add_argument('--game', default='StreetFighterIISpecialChampionEdition-Genesis')
     # parser.add_argument('--state', default="Champion.Level13.RyuVsBison.2Player")
     # parser.add_argument('--state', default="Champion.Level1.RyuVsRyu.2Player-2")
-    parser.add_argument('--state', default="Champion.Start.RyuVsRyu.2Player")
+    # parser.add_argument('--state', default="Champion.Start.RyuVsRyu.2Player")
+    # parser.add_argument('--state', default="Champion.Level3.5.unknown")
+    parser.add_argument('--state', default="Champion.Level5.unknown")
     # parser.add_argument('--state', default=retro.State.DEFAULT)
 
     parser.add_argument('--scenario', default=None)

@@ -19,7 +19,7 @@ import numpy as np
 
 # Custom environment wrapper
 class StreetFighterCustomWrapper(gym.Wrapper):
-    def __init__(self, env, reset_type="round", rendering=False, step_extra_frame=True):
+    def __init__(self, env, reset_type="round", rendering=False, step_extra_frame=True, verbose=True):
         super(StreetFighterCustomWrapper, self).__init__(env)
         self.env = env
 
@@ -46,6 +46,7 @@ class StreetFighterCustomWrapper(gym.Wrapper):
         self.player_won = 0
         self.oppont_won = 0
         self.during_transation = False
+        self.verbose = verbose
     
     def _stack_observation(self):
         return np.stack([self.frame_stack[i * 3 + 2][:, :, i] for i in range(3)], axis=-1)
@@ -101,7 +102,7 @@ class StreetFighterCustomWrapper(gym.Wrapper):
         else:
             self.during_transation = False
             if curr_player_health < 0 and curr_oppont_health < 0:
-                print ("Draw round")
+                print ("Draw round") if self.verbose else None
                 custom_reward = 1
                 if (self.reset_type == "round"):
                     custom_done = True
@@ -109,7 +110,7 @@ class StreetFighterCustomWrapper(gym.Wrapper):
                     custom_done = False
                     self.during_transation = True
             elif curr_player_health < 0:
-                print("The round is over and player loses.")
+                print("The round is over and player loses.") if self.verbose else None
                 custom_reward = -math.pow(self.full_hp, (curr_oppont_health + 1) / (self.full_hp + 1))    # Use the remaining health points of opponent as penalty. 
                 if (self.reset_type == "round"):
                     custom_done = True
@@ -118,13 +119,13 @@ class StreetFighterCustomWrapper(gym.Wrapper):
                     self.oppont_won += 1
                     if (self.oppont_won >= 2):
                         # Player loses the game
-                        print("Player loses the game")
+                        print("Player loses the game") if self.verbose else None
                         self.player_won = 0
                         self.oppont_won = 0
                         custom_done = True
 
             elif curr_oppont_health < 0:
-                print("The round is over and player wins.")
+                print("The round is over and player wins.") if self.verbose else None
                 # custom_reward = curr_player_health * self.reward_coeff # Use the remaining health points of player as reward.
                                                                     # Multiply by reward_coeff to make the reward larger than the penalty to avoid cowardice of agent.
 
@@ -138,7 +139,7 @@ class StreetFighterCustomWrapper(gym.Wrapper):
                     self.player_won += 1
                     if (self.player_won >= 2):
                         # Player wins the match
-                        print("Player wins the match")
+                        print("Player wins the match") if self.verbose else None
                         self.player_won = 0
                         self.oppont_won = 0
                         custom_done = self.reset_type == "match"

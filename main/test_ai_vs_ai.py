@@ -6,7 +6,7 @@ import numpy as np
 import retro
 from stable_baselines3 import PPO
 
-from street_fighter_custom_wrapper import StreetFighterCustomWrapper
+from wrappers.street_fighter_custom_wrapper import StreetFighterCustomWrapper
 
 #RESET_ROUND = False  # Whether to reset the round when fight is over. 
 RENDERING = True    # Whether to render the game screen.

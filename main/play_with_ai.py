@@ -4,7 +4,7 @@ from interactive import RetroInteractive
 
 import retro
 from stable_baselines3 import PPO
-from againstAI_street_fighter_custom_wrapper import StreetFighterCustomWrapper
+from wrappers.againstAI_street_fighter_custom_wrapper import StreetFighterCustomWrapper
 
 RESET_ROUND = False  # Whether to reset the round when fight is over. 
 
@@ -36,8 +36,8 @@ def make_env(game, state):
 
 game = "StreetFighterIISpecialChampionEdition-Genesis"
 #state="Champion.Level12.RyuVsBison"
-state = "Champion.Level12.RyuVsBison.2Player"
-# state = "Champion.Level13.RyuVsBison.2Player"
+# state = "Champion.Level12.RyuVsBison.2Player"
+state = "Champion.Level13.RyuVsBison.2Player"
 # state="Champion.Level1.RyuVsGuile"
 
 env = make_env(game, state)()

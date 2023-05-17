@@ -17,10 +17,10 @@ import argparse
 import retro
 from stable_baselines3 import PPO
 from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.callbacks import CheckpointCallback
+from stable_baselines3.common.callbacks import CheckpointCallback, BaseCallback
 from stable_baselines3.common.vec_env import SubprocVecEnv
 
-from street_fighter_custom_wrapper import StreetFighterCustomWrapper
+from wrappers.street_fighter_custom_wrapper import StreetFighterCustomWrapper
 
 NUM_ENV = 16
 LOG_DIR = 'logs'
@@ -59,6 +59,11 @@ def main():
 
     reset_type = "round"
     args = parser.parse_args()
+    """
+    game: not done until the agent is lose, so the opponents is ranging from Level1 to Level12
+    match: not done until the agent is lose or the match (win 2 in 3 rounds) is done, so the opponent is always Level1
+    round: only play in one round, so the opponent is always Level1
+    """
     if args.reset == 'round':
         print('Resetting stats for a round...')
         reset_type = "round"
@@ -119,10 +124,26 @@ def main():
     # }
     # model = PPO.load(model_path, env=env, device="cuda", custom_objects=custom_objects)
 
+    # create a custom callback class that tracks the episodic reward
+    class EpisodicRewardCallback(BaseCallback):
+        def __init__(self, verbose=0):
+            super().__init__(verbose)
+            self.episode_rewards = []
+
+        def reset(self):
+            self.episode_rewards = []
+
+        def __call__(self, locals, globals):
+            episode_reward = 0
+            for i in range(len(locals['episode_rewards'][-1])):
+                episode_reward += locals['episode_rewards'][-1][i]
+            self.episode_rewards.append(episode_reward)
+
     # Set up callbacks
     # Note that 1 timesetp = 6 frame
     checkpoint_interval = 31250 # checkpoint_interval * num_envs = total_steps_per_checkpoint
     checkpoint_callback = CheckpointCallback(save_freq=checkpoint_interval, save_path=save_dir, name_prefix="ppo_ryu")
+    # return_callback = EpisodicRewardCallback()
 
     # Writing the training logs from stdout to a file
     original_stdout = sys.stdout

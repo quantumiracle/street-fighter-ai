@@ -3,4 +3,12 @@ cd main
 python play_with_ai.py
 https://github.com/tonyxu99/String_fighter_AI
 
+save a new state:
+cd test
+python retro_interactive.py
 
+one side human, one side ai:
+python play_with_ai.py
+
+two-side ai:
+python test_ai_vs_ai.py

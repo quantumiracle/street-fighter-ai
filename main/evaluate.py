@@ -17,7 +17,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.evaluation import evaluate_policy
 
-from street_fighter_custom_wrapper import StreetFighterCustomWrapper
+from wrappers.street_fighter_custom_wrapper import StreetFighterCustomWrapper
 
 RESET_ROUND = True # Reset the round when fight is over. 
 RENDERING = False
