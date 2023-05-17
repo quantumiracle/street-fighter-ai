@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 # Run script to locate gym-retro game folder
 cd ..
-python ./utils/print_game_lib_folder.py
+python .\utils\print_game_lib_folder.py
 ```
 
 After the console outputs the folder path, copy it to the file explorer and navigate to the corresponding path. This folder contains the game data files for "Street Fighter II: Special Champion Edition" within gym-retro, including the game ROM file and data configuration files. Copy the `Champion.Level12.RyuVsBison.state`, `data.json`, `metadata.json`, and `scenario.json` files from the `data/` folder of this project into the game data folder, replacing the original files (administrator privileges may be required). The `.state` file is a save state for the game's highest difficulty level, while the three `.json` files are gym-retro configuration files storing game information memory addresses (this project only uses [agent_hp] and [enemy_hp] for reading character health values in real-time).
@@ -44,7 +44,9 @@ To run the program, you will also need the game ROM file for "Street Fighter II:
 
 Once you have legally obtained the game ROM file, copy it to the aforementioned gym-retro game data folder and rename it to `rom.md`. At this point, the environment setup is complete.
 
-Note: If you want to record videos of the AI agent's gameplay, you will need to install [ffmpeg](https://ffmpeg.org/).
+Note 1: If you want to manually capture save states and find memory variables in the game, you can use the gym-retro integration ui. Copy `data/Gym Retro Integration.exe` to the parent menu (two levels up, `retro/` folder) of the aforementioned gym-retro game data folder.
+
+Note 2: If you want to record videos of the AI agent's gameplay, you will need to install [ffmpeg](https://ffmpeg.org/).
 
 ```bash
 conda install ffmpeg
