@@ -3,6 +3,7 @@
 *.pyc
 *.bk*
 main/logs
+*.zip
 
 archives/
 images/

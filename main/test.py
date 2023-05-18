@@ -22,8 +22,8 @@ from wrappers.street_fighter_custom_wrapper import StreetFighterCustomWrapper
 #RESET_ROUND = False  # Whether to reset the round when fight is over. 
 RENDERING = True    # Whether to render the game screen.
 
-MODEL_NAME = r"ppo_ryu_2500000_steps_updated" # Speicify the model file to load. Model "ppo_ryu_2500000_steps_updated" is capable of beating the final stage (Bison) of the game.
-#MODEL_NAME = r"ppo_ryu_10000000_steps"
+# MODEL_NAME = r"ppo_ryu_2500000_steps_updated" # Speicify the model file to load. Model "ppo_ryu_2500000_steps_updated" is capable of beating the final stage (Bison) of the game.
+MODEL_NAME = r"ppo_ryu_vs_guile_20000000_steps"
 # Model notes:
 # ppo_ryu_2000000_steps_updated: Just beginning to overfit state, generalizable but not quite capable.
 # ppo_ryu_2500000_steps_updated: Approaching the final overfitted state, cannot dominate first round but partially generalizable. High chance of beating the final stage.
@@ -65,8 +65,9 @@ else:
     reset_type = "round"
 
 game = "StreetFighterIISpecialChampionEdition-Genesis"
-#env = make_env(game, state="Champion.Level12.RyuVsBison")()
-env = make_env(game, state="Champion.Level1.RyuVsGuile", reset_type=reset_type)()
+# env = make_env(game, state="Champion.Level12.RyuVsBison", reset_type=reset_type)()
+env = make_env(game, state="Champion.Level1.RyuVsRyu", reset_type=reset_type)()
+# env = make_env(game, state="Champion.Level4.RyuVsGuile", reset_type=reset_type)()
 # model = PPO("CnnPolicy", env)
 
 if not RANDOM_ACTION:
@@ -78,6 +79,12 @@ done = False
 num_episodes = NUM_EPISODES
 episode_reward_sum = 0
 num_victory = 0
+
+# agent_key = 'agent_hp'
+# enemy_key = 'enemy_hp'
+agent_key = 'health' # https://github.com/linyiLYi/street-fighter-ai/issues/23
+enemy_key = 'enemy_health'
+
 
 print("\nFighting Begins!\n")
 
@@ -100,10 +107,10 @@ for _ in range(num_episodes):
 
         if reward != 0:
             total_reward += reward
-            print("Reward: {:.3f}, playerHP: {}, enemyHP:{}".format(reward, info['agent_hp'], info['enemy_hp']))
+            print("Reward: {:.3f}, playerHP: {}, enemyHP:{}".format(reward, info[agent_key], info[enemy_key]))
         
 
-    if info['enemy_hp'] < 0:
+    if info[enemy_key] < 0:
         print("Victory!")
         num_victory += 1
 

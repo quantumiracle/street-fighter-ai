@@ -79,7 +79,7 @@ def main():
 
     # Set up the environment and model
     game = "StreetFighterIISpecialChampionEdition-Genesis"
-    env = SubprocVecEnv([make_env(game, state="Champion.Level1.RyuVsGuile", reset_type=reset_type, seed=i) for i in range(NUM_ENV)])
+    env = SubprocVecEnv([make_env(game, state="Champion.Level4.RyuVsGuile", reset_type=reset_type, seed=i) for i in range(NUM_ENV)])
 
     # Set linear schedule for learning rate
     # Start
@@ -110,7 +110,7 @@ def main():
     )
 
     # Set the save directory
-    save_dir = "ryu_reset_match_models"
+    save_dir = f"ryu_reset_{reset_type}_models"
     os.makedirs(save_dir, exist_ok=True)
 
     # Load the model from file

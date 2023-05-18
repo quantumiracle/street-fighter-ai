@@ -4,7 +4,7 @@
 
 ```bash
 cd manual_save_state
-python retro_interactive.py # press 'SPACE' during game to save state
+python retro_interactive.py --state "Champion.Start.RyuVsRyu.2Player" # press 'SPACE' during game to save state
 python move_state.py # specify the state file to move
 ```
 

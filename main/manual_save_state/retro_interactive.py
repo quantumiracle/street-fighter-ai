@@ -283,7 +283,8 @@ def main():
     # parser.add_argument('--state', default="Champion.Level1.RyuVsRyu.2Player-2")
     # parser.add_argument('--state', default="Champion.Start.RyuVsRyu.2Player")
     # parser.add_argument('--state', default="Champion.Level3.5.unknown")
-    parser.add_argument('--state', default="Champion.Level5.unknown")
+    parser.add_argument('--state', default="Champion.Level4.unknown")
+    # parser.add_argument('--state', default="Champion.Level5.unknown")
     # parser.add_argument('--state', default=retro.State.DEFAULT)
 
     parser.add_argument('--scenario', default=None)
